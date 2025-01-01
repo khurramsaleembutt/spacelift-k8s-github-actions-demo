@@ -45,7 +45,7 @@ jobs:
 
       - name: Deploy the Helm chart
         env:
-          KUBECONFIG: ${{ github.workspace }}/.kube/config  # Use absolute path
+          KUBECONFIG: ~/.kube/config  # Use absolute path
 
         run: |
           helm upgrade \
