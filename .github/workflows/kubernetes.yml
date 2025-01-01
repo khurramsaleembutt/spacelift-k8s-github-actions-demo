@@ -27,25 +27,28 @@ jobs:
       # Add this step to create kubeconfig file
       - name: Create kubeconfig file
         run: |
-          mkdir -p ~/.kube
-          echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
-          chmod 600 ~/.kube/config
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
 
       # Add this step to verify cluster connectivity
       - name: Verify cluster connection
+        env:
+          KUBECONFIG: ${{ github.workspace }}/.kube/config
         run: |
           kubectl get nodes
           kubectl cluster-info
 
-      - name: Configure Kubeconfig
-        uses: azure/k8s-set-context@v4
-        with:
-          method: kubeconfig
-          kubeconfig: ${{ secrets.KUBECONFIG }}
+#      - name: Configure Kubeconfig
+#        uses: azure/k8s-set-context@v4
+#        with:
+#          method: kubeconfig
+#          kubeconfig: ${{ secrets.KUBECONFIG }}
 
       - name: Deploy the Helm chart
         env:
-          KUBECONFIG: ~/.kube/config  # Add this environment variable
+          KUBECONFIG: ${{ github.workspace }}/.kube/config  # Use absolute path
+
         run: |
           helm upgrade \
           ${{ github.event.repository.name }} \
