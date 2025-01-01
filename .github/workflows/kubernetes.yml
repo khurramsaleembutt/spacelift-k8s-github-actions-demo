@@ -1,5 +1,4 @@
 jobs:
-
   build:
     runs-on: ubuntu-22.04
     steps:
@@ -21,14 +20,32 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Install Helm
         uses: azure/setup-helm@v4
+
+      # Add this step to create kubeconfig file
+      - name: Create kubeconfig file
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
+          chmod 600 ~/.kube/config
+
+      # Add this step to verify cluster connectivity
+      - name: Verify cluster connection
+        run: |
+          kubectl get nodes
+          kubectl cluster-info
+
       - name: Configure Kubeconfig
         uses: azure/k8s-set-context@v4
         with:
           method: kubeconfig
           kubeconfig: ${{ secrets.KUBECONFIG }}
+
       - name: Deploy the Helm chart
+        env:
+          KUBECONFIG: ~/.kube/config  # Add this environment variable
         run: |
           helm upgrade \
           ${{ github.event.repository.name }} \
